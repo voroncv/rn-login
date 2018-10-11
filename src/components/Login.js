@@ -1,14 +1,19 @@
 import React, {Component} from 'react';
 import {StyleSheet, Text, View, TextInput, TouchableOpacity, Alert} from 'react-native';
-import SVGImage from 'react-native-remote-svg';
+import { connect } from 'react-redux';
+import { login } from '../store/actions/login';
+
+import Logo from './layouts/Logo';
+import Button from './layouts/Button';
 
 type Props = {};
-export default class LoginPage extends Component<Props> {
+class LoginPage extends Component<Props> {
     constructor(props) {
         super(props);
         this.state = {
             login: '',
             password: '',
+            isDisableLoginButton: false,
         };
     }
 
@@ -22,21 +27,68 @@ export default class LoginPage extends Component<Props> {
         this.props.navigation.navigate('Terms');
     }
 
-    login() {
-        Alert.alert('LOGIN...');
+    toggleLoginButton (value) {
+        this.setState({
+            isDisableLoginButton: value,
+        });
+    }
+
+    async login() {
+        return this.props.loginToAccount(this.state.login);
+        try {
+            return this.props.loginToAccount(this.state.login);
+            if (this.state.login === '') {
+               return Alert.alert('Введите логин');
+            }
+
+            if (this.state.password === '') {
+                return Alert.alert('Введите пароль');
+            }
+
+            this.toggleLoginButton(true);
+
+            const params = {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: this.state.login,
+                    password: this.state.password
+                })
+            };
+
+            const response = await fetch(`https://reqres.in/api/login`, params);
+            if (!response) {
+                throw response
+            }
+
+            const responseJson = await response.json();
+            Alert.alert(JSON.stringify(responseJson));
+
+            this.toggleLoginButton(false);
+        } catch (error) {
+            console.log(error);
+            Alert.alert('Произошла ошибка...');
+
+            this.toggleLoginButton(false);
+        }
+
+    }
+
+    changeText(state, value) {
+        Alert.alert(state)
     }
 
     render() {
         return (
             <View style={styles.container}>
-                <View style={styles.logo}>
-                    <SVGImage
-                        source={require('../assets/images/logo.svg')}
-                        style={styles.logo_icon}
-                    />
-                    <Text style={styles.logo_title}>Nature inc.</Text>
-                </View>
-                <View style={{width: '100%', display: 'flex', alignItems: 'center'}}>
+                <Logo />
+                <View style={{width: '100%', display: 'flex', alignItems: 'center', marginTop: 60}}>
+
+                <Text>{this.props.test}</Text>
+
                     <TextInput
                         placeholder="Логин"
                         placeholderTextColor="#B6ADAD"
@@ -58,13 +110,11 @@ export default class LoginPage extends Component<Props> {
                         onSubmitEditing={() => { this.login() }}
                     />
 
-                    <TouchableOpacity
-                        activeOpacity={0.6}
-                        style={styles.button}
-                        onPress={this.login.bind(this)}
-                    >
-                        <Text style={styles.button_text}>Войти</Text>
-                    </TouchableOpacity>
+                    <Button
+                        label='Войти'
+                        isDisable={this.state.isDisableLoginButton}
+                        login={this.login.bind(this)}
+                    />
                     
                     <View style={styles.terms}>
                         <Text style={styles.terms_text}>Нажимая войти, вы подверждаете ознакомление с</Text>
@@ -87,20 +137,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#FFFFFF',
     },
-    logo: {
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: 70,
-    },
-    logo_icon: {
-        width: 200,
-        height: 200,
-    },
-    logo_title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginTop: 20,
-    },
     textInput: {
         height: 40,
         borderWidth: 1.5,
@@ -113,24 +149,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         borderRadius: 20,
         marginBottom: 20,
-        paddingHorizontal: 20,
-    },
-    button: {
-        marginTop: 20,
-        marginBottom: 40,
-        backgroundColor: '#FF0089',
-        width: '90%',
-        padding: 15,
-        borderRadius: 25,
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    button_text: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
+        paddingHorizontal: 15,
     },
     terms: {
         width: '90%',
@@ -147,3 +166,19 @@ const styles = StyleSheet.create({
         color: '#FF0089',
     },
 });
+
+const mapStateToProps = state => {
+    return {
+        test: state.places.test
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        loginToAccount: (user_login) => {
+            dispatch(login(user_login))
+        }
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(LoginPage);
