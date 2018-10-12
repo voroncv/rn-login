@@ -30,7 +30,7 @@ class LoginPage extends Component<Props> {
         Keyboard.dismiss();
 
         this.props.loginToAccount({
-            login: this.state.login,
+            email: this.state.login,
             password: this.state.password
         });
     }
@@ -39,7 +39,7 @@ class LoginPage extends Component<Props> {
         return (
             <View style={styles.container}>
                 <Logo />
-                <View style={{width: '100%', display: 'flex', alignItems: 'center', marginTop: 60}}>
+                <View style={styles.form}>
                     <Text>{this.props.responseText}</Text>
                     <TextInput
                         placeholder="Логин"
@@ -88,6 +88,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#FFFFFF',
+    },
+    form: {
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        marginTop: 60,
     },
     textInput: {
         height: 40,

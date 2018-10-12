@@ -8,10 +8,7 @@ export function login(data) {
       		request: {
         		url: '/login',
         		method: 'post',
-                data: {
-                	email: data.login,
-                	password: data.password
-                }
+                data: data
       		}
     	}
 	}
