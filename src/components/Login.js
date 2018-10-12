@@ -40,7 +40,6 @@ class LoginPage extends Component<Props> {
             <View style={styles.container}>
                 <Logo />
                 <View style={styles.form}>
-                    <Text>{this.props.responseText}</Text>
                     <TextInput
                         placeholder="Логин"
                         placeholderTextColor="#B6ADAD"
@@ -127,7 +126,6 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => {
     return {
-        responseText: state.users.responseText,
         isDisableLoginButton: state.users.loading,
     }
 }
@@ -136,6 +134,12 @@ const mapDispatchToProps = dispatch => {
     return {
         loginToAccount: (data) => {
             dispatch(login(data))
+                .then(function success (data) {
+                    if (data.payload) {
+                        return Alert.alert(JSON.stringify(data.payload.data));
+                    }
+                    return Alert.alert(JSON.stringify(data.error.request.response))
+                });
         }
     }
 }
