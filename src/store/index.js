@@ -7,10 +7,10 @@ const client = axios.create({
     responseType: 'json'
 });
 
-import placeReducer from './reducers/placeReducer';
+import usersReducer from './reducers/usersReducer';
 
 const rootReducer = combineReducers({
-    places: placeReducer
+    users: usersReducer
 });
 
 const configureStore = () => {

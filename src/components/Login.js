@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
-import {StyleSheet, Text, View, TextInput, TouchableOpacity, Alert} from 'react-native';
+import {StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Keyboard} from 'react-native';
 import { connect } from 'react-redux';
-import { login } from '../store/actions/login';
+import { login } from '../store/actions';
 
 import Logo from './layouts/Logo';
 import Button from './layouts/Button';
@@ -13,7 +13,6 @@ class LoginPage extends Component<Props> {
         this.state = {
             login: '',
             password: '',
-            isDisableLoginButton: false,
         };
     }
 
@@ -27,58 +26,13 @@ class LoginPage extends Component<Props> {
         this.props.navigation.navigate('Terms');
     }
 
-    toggleLoginButton (value) {
-        this.setState({
-            isDisableLoginButton: value,
+    login() {
+        Keyboard.dismiss();
+
+        this.props.loginToAccount({
+            login: this.state.login,
+            password: this.state.password
         });
-    }
-
-    async login() {
-        return this.props.loginToAccount(this.state.login);
-        try {
-            return this.props.loginToAccount(this.state.login);
-            if (this.state.login === '') {
-               return Alert.alert('Введите логин');
-            }
-
-            if (this.state.password === '') {
-                return Alert.alert('Введите пароль');
-            }
-
-            this.toggleLoginButton(true);
-
-            const params = {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: this.state.login,
-                    password: this.state.password
-                })
-            };
-
-            const response = await fetch(`https://reqres.in/api/login`, params);
-            if (!response) {
-                throw response
-            }
-
-            const responseJson = await response.json();
-            Alert.alert(JSON.stringify(responseJson));
-
-            this.toggleLoginButton(false);
-        } catch (error) {
-            console.log(error);
-            Alert.alert('Произошла ошибка...');
-
-            this.toggleLoginButton(false);
-        }
-
-    }
-
-    changeText(state, value) {
-        Alert.alert(state)
     }
 
     render() {
@@ -86,9 +40,7 @@ class LoginPage extends Component<Props> {
             <View style={styles.container}>
                 <Logo />
                 <View style={{width: '100%', display: 'flex', alignItems: 'center', marginTop: 60}}>
-
-                <Text>{this.props.test}</Text>
-
+                    <Text>{this.props.responseText}</Text>
                     <TextInput
                         placeholder="Логин"
                         placeholderTextColor="#B6ADAD"
@@ -112,7 +64,7 @@ class LoginPage extends Component<Props> {
 
                     <Button
                         label='Войти'
-                        isDisable={this.state.isDisableLoginButton}
+                        isDisable={this.props.isDisableLoginButton}
                         login={this.login.bind(this)}
                     />
                     
@@ -169,14 +121,15 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => {
     return {
-        test: state.places.test
+        responseText: state.users.responseText,
+        isDisableLoginButton: state.users.loading,
     }
 }
 
 const mapDispatchToProps = dispatch => {
     return {
-        loginToAccount: (user_login) => {
-            dispatch(login(user_login))
+        loginToAccount: (data) => {
+            dispatch(login(data))
         }
     }
 }
